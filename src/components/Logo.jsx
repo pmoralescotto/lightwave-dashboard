@@ -1,23 +1,12 @@
-import { Box } from '@chakra-ui/react';
-
 const Logo = ({ size = 'lg' }) => {
-  const fontSize = { sm: 'xl', md: '2xl', lg: '2xl', xl: '3xl' }[size] || '2xl';
+  const heights = { sm: '28px', md: '36px', lg: '44px', xl: '56px' };
 
   return (
-    <Box
-      fontSize={fontSize}
-      fontWeight="800"
-      letterSpacing="-0.02em"
-      bgGradient="to-r"
-      gradientFrom="#1e3a44"
-      gradientVia="#0891b2"
-      gradientTo="#38bdf8"
-      bgClip="text"
-      lineHeight="1"
-      userSelect="none"
-    >
-      LIGHTWAVE
-    </Box>
+    <img
+      src="/Lightwave Color Version.png"
+      alt="LIGHTWAVE"
+      style={{ height: heights[size] || heights.lg, objectFit: 'contain' }}
+    />
   );
 };
 

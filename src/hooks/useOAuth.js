@@ -9,29 +9,16 @@ export const useOAuth = () => {
   const [userInfo, setUserInfo] = useState(null);
 
   useEffect(() => {
-    const checkAuthStatus = async () => {
-      try {
-        const token = getAccessToken();
-        if (token) {
-          const isValid = await validateToken(token);
-          if (isValid) {
-            setIsAuthenticated(true);
-            setUserInfo(getUserInfo());
-          } else {
-            clearAccessToken();
-            setIsAuthenticated(false);
-          }
-        } else {
-          setIsAuthenticated(false);
-        }
-      } catch (err) {
-        console.error('Auth check failed:', err);
-        setIsAuthenticated(false);
-      } finally {
-        setLoading(false);
-      }
-    };
-    checkAuthStatus();
+    // Trust stored token — if it exists, user is authenticated.
+    // Invalid tokens will surface naturally when board data fails to load.
+    const token = getAccessToken();
+    if (token) {
+      setIsAuthenticated(true);
+      setUserInfo(getUserInfo());
+    } else {
+      setIsAuthenticated(false);
+    }
+    setLoading(false);
   }, []);
 
   const login = () => {

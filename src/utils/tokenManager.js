@@ -39,7 +39,7 @@ export const validateToken = async (token) => {
   try {
     const response = await fetch('https://api.monday.com/v2', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: token },
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ query: 'query { me { id name email } }' }),
     });
     const result = await response.json();

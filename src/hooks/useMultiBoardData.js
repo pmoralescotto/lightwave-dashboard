@@ -17,7 +17,7 @@ const fetchMondayAPI = async (query, variables = {}) => {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: token,
+      Authorization: `Bearer ${token}`,
       'API-Version': '2024-01',
     },
     body: JSON.stringify({ query, variables }),

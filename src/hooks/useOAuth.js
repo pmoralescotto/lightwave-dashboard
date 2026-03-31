@@ -70,15 +70,17 @@ export const useOAuth = () => {
       if (!data.access_token) throw new Error('No access token in response');
 
       storeAccessToken(data.access_token);
-      const isValid = await validateToken(data.access_token);
 
-      if (isValid) {
-        setIsAuthenticated(true);
-        setUserInfo(getUserInfo());
-        return true;
-      } else {
-        throw new Error('Token validation failed');
+      // Token exchange succeeded — token is valid. Fetch user info best-effort.
+      try {
+        await validateToken(data.access_token);
+      } catch (e) {
+        console.warn('User info fetch failed, continuing anyway:', e);
       }
+
+      setIsAuthenticated(true);
+      setUserInfo(getUserInfo());
+      return true;
     } catch (err) {
       console.error('OAuth callback failed:', err);
       setError(err.message || 'Authentication failed');

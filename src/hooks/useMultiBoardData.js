@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react';
-import { getAccessToken } from '../utils/tokenManager';
 import {
   getStatusBucket,
   findColumnByTitle,
@@ -10,16 +9,11 @@ import {
 
 const normalize = (value) => (value || '').trim().toLowerCase();
 
+// Proxy all API calls through Netlify function — token stays server-side, no login needed
 const fetchMondayAPI = async (query, variables = {}) => {
-  const token = getAccessToken();
-  if (!token) throw new Error('No access token');
-  const response = await fetch('https://api.monday.com/v2', {
+  const response = await fetch('/.netlify/functions/monday-api', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-      'API-Version': '2024-01',
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ query, variables }),
   });
   if (!response.ok) throw new Error(`API request failed: ${response.status}`);

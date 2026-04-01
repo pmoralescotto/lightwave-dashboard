@@ -14,28 +14,13 @@ import { useMultiBoardData } from './hooks/useMultiBoardData';
 import { useAutoRefresh, useVisibilityRefresh } from './hooks/useAutoRefresh';
 import { useBoardConfigs } from './hooks/useBoardConfigs';
 import { useAdminAuth } from './hooks/useAdminAuth';
-import { useOAuth } from './hooks/useOAuth';
 import { BUCKET_COLORS } from './utils/boardConfigs';
 import Logo from './components/Logo';
 import AdminPanel from './components/AdminPanel';
-import LoginPage from './components/LoginPage';
 
+// Dashboard is publicly accessible — no login required for viewers.
+// All Monday.com API calls are proxied through a secure Netlify function.
 const App = () => {
-  // OAuth gate — show login page if not authenticated
-  const { isAuthenticated: oauthAuthenticated, loading: oauthLoading } = useOAuth();
-
-  if (oauthLoading) {
-    return (
-      <Box bg="gray.50" minH="100vh" display="flex" alignItems="center" justifyContent="center">
-        <Spinner size="xl" color="cyan.500" />
-      </Box>
-    );
-  }
-
-  if (!oauthAuthenticated) {
-    return <LoginPage />;
-  }
-
   return <Dashboard />;
 };
 

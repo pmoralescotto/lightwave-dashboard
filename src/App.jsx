@@ -2,15 +2,16 @@ import { useMemo, useState, useEffect } from 'react';
 import {
   Box, Container, Stack, SimpleGrid, Alert, Select, createListCollection,
   Skeleton, Badge, Button, useDisclosure, Dialog, Portal, CloseButton,
-  VStack, Text, Input, Field, Spinner,
+  VStack, HStack, Text, Input, Field, Spinner,
 } from '@chakra-ui/react';
 import PageHeader from '@components/PageHeader';
 import KPICard from '@components/KPICard';
 import ChartCard from '@components/ChartCard';
 import ActivationBar from '@components/ActivationBar';
+import TopPerformers from '@components/TopPerformers';
 import { Pie, Bar } from '@charts';
 import TableComponent from '@components/Table';
-import { Building2, TrendingUp, Home, AlertCircle, CheckCircle, RefreshCw, Settings } from 'lucide-react';
+import { Building2, Home, AlertCircle, CheckCircle, RefreshCw, Settings } from 'lucide-react';
 import { useMultiBoardData } from './hooks/useMultiBoardData';
 import { useAutoRefresh, useVisibilityRefresh } from './hooks/useAutoRefresh';
 import { useBoardConfigs } from './hooks/useBoardConfigs';
@@ -169,12 +170,18 @@ const Dashboard = () => {
   if (configsLoading || loading) {
     return (
       <Box bg="gray.50" minH="100vh" w="100%">
-        <Container py="16" maxW="1860px">
+        <Box position="sticky" top="0" zIndex="100" bg="white" borderBottom="1px solid" borderColor="gray.200" boxShadow="sm" px={{ base: '4', md: '8' }} py="3">
+          <Box display="flex" justifyContent="space-between" alignItems="center" maxW="1860px" mx="auto">
+            <Logo size="md" />
+          </Box>
+        </Box>
+        <Container py={{ base: '6', md: '10' }} maxW="1860px">
           <Stack direction="column" gap="8">
             <PageHeader title="Ownership Internet Portfolio Dashboard" subtitle={`Loading boards... ${loadedCount}/${totalCount}`} />
-            <SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 5 }} gap="4">
-              {[1, 2, 3, 4, 5].map((i) => <Skeleton key={i} height="120px" borderRadius="xl" />)}
+            <SimpleGrid columns={{ base: 1, sm: 2, lg: 4 }} gap="4">
+              {[1, 2, 3, 4].map((i) => <Skeleton key={i} height="120px" borderRadius="xl" />)}
             </SimpleGrid>
+            <Skeleton height="80px" borderRadius="xl" />
             <SimpleGrid columns={{ base: 1, xl: 2 }} gap="4">
               <Skeleton height="400px" borderRadius="xl" />
               <Skeleton height="400px" borderRadius="xl" />
@@ -204,32 +211,51 @@ const Dashboard = () => {
 
   return (
     <Box bg="gray.50" minH="100vh" w="100%">
-      <Container py="16" maxW="1860px">
-        <Stack direction="column" gap="8">
-          <Box mb="4"><Logo size="xl" /></Box>
-
-          <Box display="flex" justifyContent="space-between" alignItems="flex-start" flexWrap="wrap" gap="4">
-            <PageHeader
-              title="Ownership Internet Portfolio Dashboard"
-              subtitle="Portfolio-wide view of internet activation performance across managed properties"
-            />
-            <Box display="flex" alignItems="center" gap="3" alignSelf="flex-end">
-              {lastRefreshed && !isRefreshing && (
-                <Text fontSize="xs" color="gray.400">
-                  Updated {lastRefreshed.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </Text>
-              )}
-              {isRefreshing && <Badge colorPalette="blue" size="lg" px="3" py="1">Refreshing data...</Badge>}
-              <Button variant="outline" onClick={handleManageClick} size="md" disabled={authLoading}>
-                <Settings size={16} /> Manage Properties
-              </Button>
-              <Button variant="outline" onClick={refetch} disabled={isRefreshing} size="md">
-                <RefreshCw size={16} /> Refresh Data
-              </Button>
-            </Box>
+      {/* Sticky Header */}
+      <Box
+        position="sticky"
+        top="0"
+        zIndex="100"
+        bg="white"
+        borderBottom="1px solid"
+        borderColor="gray.200"
+        boxShadow="sm"
+        px={{ base: '4', md: '8' }}
+        py="3"
+      >
+        <Box display="flex" justifyContent="space-between" alignItems="center" maxW="1860px" mx="auto" gap="3">
+          <Logo size={{ base: 'sm', md: 'md' }} />
+          <Box display="flex" alignItems="center" gap={{ base: '2', md: '3' }} flexShrink={0}>
+            {lastRefreshed && !isRefreshing && (
+              <Text fontSize="xs" color="gray.400" display={{ base: 'none', md: 'block' }}>
+                Updated {lastRefreshed.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </Text>
+            )}
+            {isRefreshing && (
+              <Badge colorPalette="blue" size="md" px="2" py="1" display={{ base: 'none', sm: 'flex' }}>
+                Refreshing...
+              </Badge>
+            )}
+            <Button variant="outline" onClick={handleManageClick} size={{ base: 'sm', md: 'md' }} disabled={authLoading}>
+              <Settings size={15} />
+              <Box as="span" display={{ base: 'none', sm: 'inline' }}> Manage</Box>
+            </Button>
+            <Button variant="outline" onClick={refetch} disabled={isRefreshing} size={{ base: 'sm', md: 'md' }}>
+              <RefreshCw size={15} />
+              <Box as="span" display={{ base: 'none', sm: 'inline' }}> Refresh</Box>
+            </Button>
           </Box>
+        </Box>
+      </Box>
 
-          <SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 4 }} gap="4">
+      <Container py={{ base: '6', md: '10' }} maxW="1860px">
+        <Stack direction="column" gap={{ base: '5', md: '8' }}>
+          <PageHeader
+            title="Ownership Internet Portfolio Dashboard"
+            subtitle="Portfolio-wide view of internet activation performance across managed properties"
+          />
+
+          <SimpleGrid columns={{ base: 1, sm: 2, lg: 4 }} gap="4">
             <KPICard value={kpiMetrics.totalProperties} label="Total Properties" icon={<Building2 size={32} />} color="cyan" />
             <KPICard value={kpiMetrics.totalUnits.toLocaleString()} label="Total Units" icon={<Home size={32} />} color="blue" />
             <KPICard value={kpiMetrics.activeCount.toLocaleString()} label="Active" icon={<CheckCircle size={32} />} color="green" />
@@ -242,13 +268,17 @@ const Dashboard = () => {
             totalUnits={kpiMetrics.totalUnits}
           />
 
+          {isPortfolioView && propertySummary.length >= 2 && (
+            <TopPerformers data={propertySummary} />
+          )}
+
           <Box bg="white" p="4" borderRadius="xl" border="1px solid" borderColor="gray.200">
             <Select.Root
               collection={propertyOptions}
               value={[selectedProperty]}
               onValueChange={(e) => setSelectedProperty(e.value[0])}
               size="md"
-              width="340px"
+              width={{ base: 'full', md: '340px' }}
             >
               <Select.Label>Select Property</Select.Label>
               <Select.Control>
@@ -284,7 +314,7 @@ const Dashboard = () => {
             </ChartCard>
           </SimpleGrid>
 
-          <Box bg="white" borderRadius="xl" border="1px solid" borderColor="gray.200" p="6">
+          <Box bg="white" borderRadius="xl" border="1px solid" borderColor="gray.200" p={{ base: '4', md: '6' }}>
             {isPortfolioView
               ? <TableComponent structure={summaryTableStructure} items={propertySummary} />
               : <TableComponent structure={detailTableStructure} items={currentItems} />}

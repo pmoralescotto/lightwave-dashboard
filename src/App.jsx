@@ -7,6 +7,7 @@ import {
 import PageHeader from '@components/PageHeader';
 import KPICard from '@components/KPICard';
 import ChartCard from '@components/ChartCard';
+import ActivationBar from '@components/ActivationBar';
 import { Pie, Bar } from '@charts';
 import TableComponent from '@components/Table';
 import { Building2, TrendingUp, Home, AlertCircle, CheckCircle, RefreshCw, Settings } from 'lucide-react';
@@ -28,6 +29,14 @@ const Dashboard = () => {
   const { boardConfigs, loading: configsLoading, addBoard, updateBoard, removeBoard, saveBoardConfigs } = useBoardConfigs();
   const { items, loading, isRefreshing, error, loadedCount, totalCount, refetch } = useMultiBoardData(boardConfigs);
   const [selectedProperty, setSelectedProperty] = useState('all');
+  const [lastRefreshed, setLastRefreshed] = useState(null);
+
+  // Track last refresh time
+  useEffect(() => {
+    if (!loading && !isRefreshing && items.length > 0) {
+      setLastRefreshed(new Date());
+    }
+  }, [loading, isRefreshing]);
   const { open: adminOpen, onOpen: onAdminOpen, onClose: onAdminClose } = useDisclosure();
   const { open: passwordOpen, onOpen: onPasswordOpen, onClose: onPasswordClose } = useDisclosure();
 
@@ -205,6 +214,11 @@ const Dashboard = () => {
               subtitle="Portfolio-wide view of internet activation performance across managed properties"
             />
             <Box display="flex" alignItems="center" gap="3" alignSelf="flex-end">
+              {lastRefreshed && !isRefreshing && (
+                <Text fontSize="xs" color="gray.400">
+                  Updated {lastRefreshed.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </Text>
+              )}
               {isRefreshing && <Badge colorPalette="blue" size="lg" px="3" py="1">Refreshing data...</Badge>}
               <Button variant="outline" onClick={handleManageClick} size="md" disabled={authLoading}>
                 <Settings size={16} /> Manage Properties
@@ -215,13 +229,18 @@ const Dashboard = () => {
             </Box>
           </Box>
 
-          <SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 5 }} gap="4">
-            <KPICard value={kpiMetrics.totalProperties} label="Total Properties" icon={<Building2 size={32} />} />
-            <KPICard value={kpiMetrics.totalUnits.toLocaleString()} label="Active Group Total" icon={<Home size={32} />} />
-            <KPICard value={kpiMetrics.activeCount.toLocaleString()} label="Active" icon={<CheckCircle size={32} />} />
-            <KPICard value={kpiMetrics.nonActiveCount.toLocaleString()} label="Non-Active" icon={<AlertCircle size={32} />} />
-            <KPICard value={`${kpiMetrics.activationRate}%`} label="Activation Rate" icon={<TrendingUp size={32} />} />
+          <SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 4 }} gap="4">
+            <KPICard value={kpiMetrics.totalProperties} label="Total Properties" icon={<Building2 size={32} />} color="cyan" />
+            <KPICard value={kpiMetrics.totalUnits.toLocaleString()} label="Total Units" icon={<Home size={32} />} color="blue" />
+            <KPICard value={kpiMetrics.activeCount.toLocaleString()} label="Active" icon={<CheckCircle size={32} />} color="green" />
+            <KPICard value={kpiMetrics.nonActiveCount.toLocaleString()} label="Non-Active" icon={<AlertCircle size={32} />} color="red" />
           </SimpleGrid>
+
+          <ActivationBar
+            rate={kpiMetrics.activationRate}
+            activeCount={kpiMetrics.activeCount}
+            totalUnits={kpiMetrics.totalUnits}
+          />
 
           <Box bg="white" p="4" borderRadius="xl" border="1px solid" borderColor="gray.200">
             <Select.Root

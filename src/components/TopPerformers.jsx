@@ -13,19 +13,22 @@ const TopPerformers = ({ data }) => {
 
   const Row = ({ item, rank, type }) => {
     const isTop = type === 'top';
+    const isDeployment = parseFloat(item.activationRate) === 0;
+    const bg = isDeployment ? '#eff6ff' : isTop ? 'var(--chakra-colors-green-50)' : 'var(--chakra-colors-red-50)';
+    const borderColor = isDeployment ? '#bfdbfe' : isTop ? 'var(--chakra-colors-green-100)' : 'var(--chakra-colors-red-100)';
+    const badgeColor = isDeployment ? '#1d4ed8' : isTop ? 'var(--chakra-colors-green-600)' : 'var(--chakra-colors-red-600)';
+
     return (
       <HStack
         justify="space-between"
         p="3"
         borderRadius="lg"
-        bg={isTop ? 'green.50' : 'red.50'}
-        border="1px solid"
-        borderColor={isTop ? 'green.100' : 'red.100'}
+        style={{ background: bg, border: `1px solid ${borderColor}` }}
       >
         <HStack gap="2">
           <Box
             w="22px" h="22px" borderRadius="full"
-            bg={isTop ? 'green.500' : 'red.400'}
+            bg={isDeployment ? 'blue.500' : isTop ? 'green.500' : 'red.400'}
             display="flex" alignItems="center" justifyContent="center"
           >
             <Text fontSize="10px" fontWeight="800" color="white">{rank}</Text>
@@ -34,9 +37,13 @@ const TopPerformers = ({ data }) => {
         </HStack>
         <HStack gap="2">
           <Text fontSize="xs" color="gray.500">{item.activeCount}/{item.totalUnits}</Text>
-          <Text fontSize="sm" fontWeight="800" color={isTop ? 'green.600' : 'red.600'}>
-            {item.activationRate}
-          </Text>
+          {isDeployment ? (
+            <Text fontSize="xs" fontWeight="700" color="blue.600">🚧 Deployment Phase</Text>
+          ) : (
+            <Text fontSize="sm" fontWeight="800" style={{ color: badgeColor }}>
+              {item.activationRate}
+            </Text>
+          )}
         </HStack>
       </HStack>
     );

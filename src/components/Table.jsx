@@ -21,19 +21,26 @@ const StatusBadge = ({ value }) => {
 
 const RateBadge = ({ value }) => {
   const pct = parseFloat(value) || 0;
+
+  if (pct === 0) {
+    return (
+      <span style={{
+        display: 'inline-flex', alignItems: 'center', gap: '4px',
+        padding: '2px 10px', borderRadius: '9999px', fontSize: '12px', fontWeight: '700',
+        background: '#eff6ff', color: '#1d4ed8', border: '1px solid #bfdbfe',
+      }}>
+        🚧 Deployment Phase
+      </span>
+    );
+  }
+
   const color = pct >= 70 ? '#15803d' : pct >= 40 ? '#b45309' : '#dc2626';
   const bg   = pct >= 70 ? '#dcfce7' : pct >= 40 ? '#fef3c7' : '#fee2e2';
   const border = pct >= 70 ? '#bbf7d0' : pct >= 40 ? '#fde68a' : '#fecaca';
   return (
     <span style={{
-      display: 'inline-block',
-      padding: '2px 10px',
-      borderRadius: '9999px',
-      fontSize: '12px',
-      fontWeight: '700',
-      background: bg,
-      color,
-      border: `1px solid ${border}`,
+      display: 'inline-block', padding: '2px 10px', borderRadius: '9999px',
+      fontSize: '12px', fontWeight: '700', background: bg, color, border: `1px solid ${border}`,
     }}>
       {value}
     </span>

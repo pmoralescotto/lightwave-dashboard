@@ -37,13 +37,29 @@ export const useBoardConfigs = () => {
     setLoading(false);
   }, []);
 
-  const addBoard = (config) => setBoardConfigs((prev) => [...prev, config]);
+  const addBoard = (config) => {
+    setBoardConfigs((prev) => {
+      const updated = [...prev, config];
+      storage.set(STORAGE_KEY, updated);
+      return updated;
+    });
+  };
 
-  const updateBoard = (id, updates) =>
-    setBoardConfigs((prev) => prev.map((c) => (c.id === id ? { ...c, ...updates } : c)));
+  const updateBoard = (id, updates) => {
+    setBoardConfigs((prev) => {
+      const updated = prev.map((c) => (c.id === id ? { ...c, ...updates } : c));
+      storage.set(STORAGE_KEY, updated);
+      return updated;
+    });
+  };
 
-  const removeBoard = (id) =>
-    setBoardConfigs((prev) => prev.filter((c) => c.id !== id));
+  const removeBoard = (id) => {
+    setBoardConfigs((prev) => {
+      const updated = prev.filter((c) => c.id !== id);
+      storage.set(STORAGE_KEY, updated);
+      return updated;
+    });
+  };
 
   const saveBoardConfigs = async () => {
     try {

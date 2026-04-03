@@ -123,9 +123,9 @@ const AdminPanel = ({ open, onClose, boardConfigs = [], onAddBoard, onUpdateBoar
           <Separator />
 
           <Box p="4" bg="green.50" borderRadius="xl" borderWidth="1px" borderColor="green.200">
-            <Text fontSize="xs" color="green.700" mb="2">Changes are saved to browser storage and persist across sessions.</Text>
-            <Button colorPalette="green" onClick={handleSaveAll} disabled={saving} w="full">
-              {saving ? 'Saving...' : 'Save All Changes'}
+            <Text fontSize="xs" color="green.700" mb="2">✅ Changes are saved automatically to this browser. You can close the panel at any time.</Text>
+            <Button colorPalette="green" onClick={handleSaveAll} disabled={saving} w="full" variant="outline">
+              {saving ? 'Saving...' : 'Force Save'}
             </Button>
           </Box>
         </VStack>

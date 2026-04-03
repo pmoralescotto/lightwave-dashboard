@@ -4,6 +4,10 @@ import { BOARD_CONFIGS } from '../utils/boardConfigs';
 const STORAGE_KEY = 'ownership_dashboard_board_configs';
 const REMOVED_IDS = ['7684947431', '7484652124', '8401917956'];
 
+// Bump this version string any time BOARD_CONFIGS changes — forces cache reset
+const CONFIG_VERSION = BOARD_CONFIGS.map((b) => b.id).join(',');
+const VERSION_KEY = 'ownership_dashboard_board_configs_version';
+
 const storage = {
   get: (key) => {
     try {
@@ -25,14 +29,22 @@ export const useBoardConfigs = () => {
   useEffect(() => { boardConfigsRef.current = boardConfigs; }, [boardConfigs]);
 
   useEffect(() => {
+    const storedVersion = localStorage.getItem(VERSION_KEY);
     const stored = storage.get(STORAGE_KEY);
-    if (Array.isArray(stored) && stored.length > 0) {
+
+    // If hardcoded list changed since last visit, reset to latest hardcoded list
+    if (storedVersion !== CONFIG_VERSION) {
+      storage.set(STORAGE_KEY, BOARD_CONFIGS);
+      localStorage.setItem(VERSION_KEY, CONFIG_VERSION);
+      setBoardConfigs(BOARD_CONFIGS);
+    } else if (Array.isArray(stored) && stored.length > 0) {
       const filtered = stored.filter((c) => !REMOVED_IDS.includes(c.id));
       if (filtered.length !== stored.length) storage.set(STORAGE_KEY, filtered);
       setBoardConfigs(filtered);
     } else {
-      setBoardConfigs(BOARD_CONFIGS);
       storage.set(STORAGE_KEY, BOARD_CONFIGS);
+      localStorage.setItem(VERSION_KEY, CONFIG_VERSION);
+      setBoardConfigs(BOARD_CONFIGS);
     }
     setLoading(false);
   }, []);

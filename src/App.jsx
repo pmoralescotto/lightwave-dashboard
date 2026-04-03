@@ -175,7 +175,7 @@ const Dashboard = () => {
             <Logo size="md" />
           </Box>
         </Box>
-        <Container py={{ base: '6', md: '10' }} maxW="1860px">
+        <Container py={{ base: '6', md: '10' }} px={{ base: '4', md: '8', lg: '10' }} maxW="1860px" mx="auto">
           <Stack direction="column" gap="8">
             <PageHeader title="Ownership Internet Portfolio Dashboard" subtitle={`Loading boards... ${loadedCount}/${totalCount}`} />
             <SimpleGrid columns={{ base: 1, sm: 2, lg: 4 }} gap="4">
@@ -248,7 +248,7 @@ const Dashboard = () => {
         </Box>
       </Box>
 
-      <Container py={{ base: '6', md: '10' }} maxW="1860px">
+      <Container py={{ base: '6', md: '10' }} px={{ base: '4', md: '8', lg: '10' }} maxW="1860px" mx="auto">
         <Stack direction="column" gap={{ base: '5', md: '8' }}>
           <PageHeader
             title="Ownership Internet Portfolio Dashboard"

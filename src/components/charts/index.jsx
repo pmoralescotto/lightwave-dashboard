@@ -14,17 +14,17 @@ import {
 } from 'recharts';
 
 export const Pie = ({ data, colors = [], showLegend = false }) => (
-  <ResponsiveContainer width="100%" height={280}>
+  <ResponsiveContainer width="100%" height={380}>
     <PieChart>
       <RechartsPie
         data={data}
         cx="50%"
         cy="50%"
-        outerRadius={90}
+        outerRadius={140}
         dataKey="value"
         nameKey="label"
         label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-        labelLine={false}
+        labelLine={true}
       >
         {data.map((_, index) => (
           <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />

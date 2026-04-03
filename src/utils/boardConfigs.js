@@ -1,5 +1,6 @@
 export const BOARD_CONFIGS = [
   { id: '18381708169', name: '52 at Park' },
+  { id: '18407051928', name: 'Allapattah Gardens' },
   { id: '10062266317', name: 'Bishop Woods' },
   { id: '9043871935', name: 'Canyons' },
   { id: '8611750964', name: 'Chippenham Internet' },

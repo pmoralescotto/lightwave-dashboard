@@ -11,7 +11,7 @@ import ActivationBar from '@components/ActivationBar';
 import TopPerformers from '@components/TopPerformers';
 import { Pie, Bar } from '@charts';
 import TableComponent from '@components/Table';
-import { Building2, Home, AlertCircle, CheckCircle, RefreshCw, Settings } from 'lucide-react';
+import { Building2, Home, AlertCircle, CheckCircle, RefreshCw, Settings, Zap } from 'lucide-react';
 import { useMultiBoardData } from './hooks/useMultiBoardData';
 import { useAutoRefresh, useVisibilityRefresh } from './hooks/useAutoRefresh';
 import { useBoardConfigs } from './hooks/useBoardConfigs';
@@ -177,7 +177,13 @@ const Dashboard = () => {
         </Box>
         <Container py={{ base: '6', md: '10' }} px={{ base: '4', md: '8', lg: '10' }} maxW="1860px" mx="auto">
           <Stack direction="column" gap="8">
-            <PageHeader title="Ownership Internet Portfolio Dashboard" subtitle={`Loading boards... ${loadedCount}/${totalCount}`} />
+            <Box display="flex" alignItems="center" gap="3">
+              <Zap size={28} className="zap-loading" />
+              <Box>
+                <Text fontSize="2xl" fontWeight="700" color="gray.900">Ownership Internet Portfolio Dashboard</Text>
+                <Text fontSize="sm" color="gray.500">Loading boards... {loadedCount}/{totalCount}</Text>
+              </Box>
+            </Box>
             <SimpleGrid columns={{ base: 1, sm: 2, lg: 4 }} gap="4">
               {[1, 2, 3, 4].map((i) => <Skeleton key={i} height="120px" borderRadius="xl" />)}
             </SimpleGrid>

@@ -4,6 +4,18 @@
   padding: 0;
 }
 
+@keyframes zapPulse {
+  0%   { opacity: 1;   transform: scale(1)    drop-shadow(0 0 0px #06b6d4); }
+  50%  { opacity: 0.4; transform: scale(1.25) drop-shadow(0 0 8px #06b6d4); }
+  100% { opacity: 1;   transform: scale(1)    drop-shadow(0 0 0px #06b6d4); }
+}
+
+.zap-loading {
+  animation: zapPulse 1s ease-in-out infinite;
+  filter: drop-shadow(0 0 4px #06b6d4);
+  color: #06b6d4;
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background: #f8fafc;

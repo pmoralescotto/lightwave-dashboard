@@ -322,8 +322,8 @@ const Dashboard = () => {
 
           <Box bg="white" borderRadius="xl" border="1px solid" borderColor="gray.200" p={{ base: '4', md: '6' }}>
             {isPortfolioView
-              ? <TableComponent structure={summaryTableStructure} items={propertySummary} />
-              : <TableComponent structure={detailTableStructure} items={currentItems} />}
+              ? <TableComponent structure={summaryTableStructure} items={propertySummary} defaultSortKey="property" defaultSortDir="asc" />
+              : <TableComponent structure={detailTableStructure} items={currentItems} defaultSortKey="statusBucket" defaultSortDir="asc" />}
           </Box>
         </Stack>
       </Container>

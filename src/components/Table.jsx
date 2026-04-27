@@ -48,11 +48,11 @@ const RateBadge = ({ value }) => {
   );
 };
 
-const TableComponent = ({ structure, items }) => {
+const TableComponent = ({ structure, items, defaultSortKey = null, defaultSortDir = 'asc' }) => {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
-  const [sortKey, setSortKey] = useState(null);
-  const [sortDir, setSortDir] = useState('desc');
+  const [sortKey, setSortKey] = useState(defaultSortKey);
+  const [sortDir, setSortDir] = useState(defaultSortDir);
   const pageSize = 50;
 
   const handleSort = (key) => {
@@ -68,15 +68,18 @@ const TableComponent = ({ structure, items }) => {
     })
   );
 
-  const sorted = sortKey
-    ? [...filtered].sort((a, b) => {
-        const av = parseFloat(String(a[sortKey]).replace('%', '')) || String(a[sortKey] ?? '');
-        const bv = parseFloat(String(b[sortKey]).replace('%', '')) || String(b[sortKey] ?? '');
-        if (av < bv) return sortDir === 'asc' ? -1 : 1;
-        if (av > bv) return sortDir === 'asc' ? 1 : -1;
-        return 0;
-      })
-    : filtered;
+  const sorted = [...filtered].sort((a, b) => {
+    if (sortKey) {
+      const av = parseFloat(String(a[sortKey]).replace('%', '')) || String(a[sortKey] ?? '');
+      const bv = parseFloat(String(b[sortKey]).replace('%', '')) || String(b[sortKey] ?? '');
+      if (av < bv) return sortDir === 'asc' ? -1 : 1;
+      if (av > bv) return sortDir === 'asc' ? 1 : -1;
+    }
+    // Secondary sort: always A→Z by name/unit
+    const an = String(a['name'] ?? a['property'] ?? '').toLowerCase();
+    const bn = String(b['name'] ?? b['property'] ?? '').toLowerCase();
+    return an.localeCompare(bn);
+  });
 
   const totalPages = Math.max(1, Math.ceil(sorted.length / pageSize));
   const paged = sorted.slice((page - 1) * pageSize, page * pageSize);

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Box, HStack, Input, Text, Button } from '@chakra-ui/react';
+import { Download } from 'lucide-react';
 
 const StatusBadge = ({ value }) => {
   const isActive = value === 'Active';
@@ -88,6 +89,24 @@ const TableComponent = ({ structure, items }) => {
     return val ?? '—';
   };
 
+  const handleExport = () => {
+    const headers = structure.map((col) => col.label).join(',');
+    const rows = sorted.map((item) =>
+      structure.map((col) => {
+        const val = col.render ? '' : String(item[col.key] ?? '').replace(/,/g, ' ');
+        return `"${val}"`;
+      }).join(',')
+    );
+    const csv = [headers, ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'lightwave-dashboard.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <Box>
       <HStack mb="4" justify="space-between" flexWrap="wrap" gap="2">
@@ -98,7 +117,12 @@ const TableComponent = ({ structure, items }) => {
           maxW="300px"
           size="sm"
         />
-        <Text fontSize="sm" color="gray.500">{filtered.length} records</Text>
+        <HStack gap="3">
+          <Text fontSize="sm" color="gray.500">{filtered.length} records</Text>
+          <Button size="sm" variant="outline" onClick={handleExport}>
+            <Download size={14} /> Export CSV
+          </Button>
+        </HStack>
       </HStack>
 
       <Box overflowX="auto">

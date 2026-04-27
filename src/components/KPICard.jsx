@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { Box, VStack, Text } from '@chakra-ui/react';
+import { Copy, Check } from 'lucide-react';
 
 const colorMap = {
   cyan:  { border: '#06b6d4', icon: '#06b6d4', value: '#0e7490' },
@@ -10,6 +12,13 @@ const colorMap = {
 
 const KPICard = ({ value, label, icon, color = 'cyan' }) => {
   const colors = colorMap[color] || colorMap.cyan;
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(`${label}: ${value}`);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  };
 
   return (
     <Box
@@ -23,7 +32,16 @@ const KPICard = ({ value, label, icon, color = 'cyan' }) => {
       borderTopColor={colors.border}
       transition="box-shadow 0.2s"
       _hover={{ boxShadow: 'md' }}
+      position="relative"
+      cursor="pointer"
+      onClick={handleCopy}
+      title={`Click to copy: ${label}: ${value}`}
     >
+      {/* Copy indicator */}
+      <Box position="absolute" top="3" right="3" color="gray.300" _hover={{ color: 'gray.500' }}>
+        {copied ? <Check size={14} color="#16a34a" /> : <Copy size={14} />}
+      </Box>
+
       <VStack align="start" gap="3">
         <Box style={{ color: colors.icon }}>{icon}</Box>
         <Text fontSize="2xl" fontWeight="800" lineHeight="1" style={{ color: colors.value }}>
@@ -33,6 +51,19 @@ const KPICard = ({ value, label, icon, color = 'cyan' }) => {
           {label}
         </Text>
       </VStack>
+
+      {copied && (
+        <Box
+          position="absolute"
+          bottom="2"
+          right="3"
+          fontSize="10px"
+          color="green.600"
+          fontWeight="600"
+        >
+          Copied!
+        </Box>
+      )}
     </Box>
   );
 };

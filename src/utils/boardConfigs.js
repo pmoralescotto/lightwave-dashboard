@@ -1,3 +1,6 @@
+// ── All property boards ───────────────────────────────────────────────────────
+// Boards with an empty name have their property name resolved automatically
+// from the Monday.com board title at runtime.
 export const BOARD_CONFIGS = [
   { id: '18381708169', name: '52 at Park' },
   { id: '18407051928', name: 'Allapattah Gardens' },
@@ -21,6 +24,15 @@ export const BOARD_CONFIGS = [
   { id: '18401423601', name: 'The Victoria at Huxley' },
   { id: '18401423458', name: 'The View at Huxley' },
   { id: '18403282432', name: 'Tuscany Lakes Internet' },
+  { id: '18416374771', name: 'Brookside Crossing (Citrus Grove)' },
+  { id: '18414517915', name: 'Cresta Ranch' },
+  { id: '18414517422', name: 'Mesquite Trails' },
+  { id: '18415799052', name: 'Marshall Pointe' },
+  { id: '18409472935', name: 'Pearsall Park' },
+  { id: '18413059714', name: 'Sageland' },
+  { id: '18407053360', name: 'Santa Clara I' },
+  { id: '18407053038', name: 'Santa Clara II' },
+  { id: '18409193740', name: 'Zephyr Pointe' },
 ];
 
 export const BUCKET_COLORS = {

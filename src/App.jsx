@@ -28,7 +28,7 @@ const App = () => {
 
 const Dashboard = () => {
   const { boardConfigs, loading: configsLoading, addBoard, updateBoard, removeBoard, saveBoardConfigs } = useBoardConfigs();
-  const { items, loading, isRefreshing, error, loadedCount, totalCount, refetch } = useMultiBoardData(boardConfigs);
+  const { items, resolvedNames, loading, isRefreshing, error, loadedCount, totalCount, refetch } = useMultiBoardData(boardConfigs);
   const [selectedProperty, setSelectedProperty] = useState('all');
   const [lastRefreshed, setLastRefreshed] = useState(null);
 
@@ -101,13 +101,16 @@ const Dashboard = () => {
     return createListCollection({
       items: [
         { label: 'All Properties', value: 'all' },
-        ...boardConfigs.map((config) => ({
-          label: `${config.name} (${counts[config.name] || 0})`,
-          value: config.name,
-        })),
+        ...boardConfigs.map((config) => {
+          const name = resolvedNames[config.id] || config.name || config.id;
+          return {
+            label: `${name} (${counts[name] || 0})`,
+            value: name,
+          };
+        }),
       ],
     });
-  }, [items, boardConfigs]);
+  }, [items, boardConfigs, resolvedNames]);
 
   const kpiMetrics = useMemo(() => {
     const totalUnits = currentItems.length;
@@ -135,14 +138,15 @@ const Dashboard = () => {
   const propertySummary = useMemo(() => {
     if (!isPortfolioView) return [];
     return boardConfigs.map((config) => {
-      const propertyItems = items.filter((item) => item.property === config.name);
+      const name = resolvedNames[config.id] || config.name || config.id;
+      const propertyItems = items.filter((item) => item.property === name);
       const totalUnits = propertyItems.length;
       const activeCount = propertyItems.filter((i) => i.statusBucket === 'Active').length;
       const nonActiveCount = propertyItems.filter((i) => i.statusBucket === 'Non-Active').length;
       const activationRate = totalUnits > 0 ? ((activeCount / totalUnits) * 100).toFixed(1) : '0.0';
-      return { property: config.name, totalUnits, activeCount, nonActiveCount, activationRate: `${activationRate}%` };
+      return { property: name, totalUnits, activeCount, nonActiveCount, activationRate: `${activationRate}%` };
     }).sort((a, b) => a.property.localeCompare(b.property));
-  }, [items, isPortfolioView, boardConfigs]);
+  }, [items, isPortfolioView, boardConfigs, resolvedNames]);
 
   const summaryTableStructure = [
     { key: 'property', label: 'Property', type: 'text', minWidth: '220px' },

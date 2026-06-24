@@ -7,7 +7,9 @@ const colorMap = {
   green: { border: '#22c55e', icon: '#16a34a', value: '#15803d' },
   red:   { border: '#f87171', icon: '#ef4444', value: '#dc2626' },
   blue:  { border: '#60a5fa', icon: '#3b82f6', value: '#1d4ed8' },
-  gray:  { border: '#94a3b8', icon: '#64748b', value: '#475569' },
+  gray:   { border: '#94a3b8', icon: '#64748b', value: '#475569' },
+  purple: { border: '#a855f7', icon: '#9333ea', value: '#7c3aed' },
+  orange: { border: '#fb923c', icon: '#f97316', value: '#ea580c' },
 };
 
 const KPICard = ({ value, label, icon, color = 'cyan' }) => {

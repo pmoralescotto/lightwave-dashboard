@@ -22,6 +22,7 @@ const fetchMondayAPI = async (query, variables = {}) => {
 
 export const useMultiBoardData = (boardConfigs = []) => {
   const [items, setItems] = useState([]);
+  const [resolvedNames, setResolvedNames] = useState({});
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState(null);
@@ -44,6 +45,7 @@ export const useMultiBoardData = (boardConfigs = []) => {
       }
 
       const allItems = [];
+      const nameMap = {};
       const batchSize = 8;
 
       for (let i = 0; i < boardConfigs.length; i += batchSize) {
@@ -74,6 +76,10 @@ export const useMultiBoardData = (boardConfigs = []) => {
               if (!boards.length) return [];
 
               const board = boards[0];
+              // Use the configured name if set; otherwise fall back to the Monday.com board title
+              const effectiveName = config.name || board.name || config.id;
+              nameMap[config.id] = effectiveName;
+
               let boardItems = board.items_page?.items || [];
               let cursor = board.items_page?.cursor;
               const boardColumns = board.columns || [];
@@ -122,7 +128,7 @@ export const useMultiBoardData = (boardConfigs = []) => {
                 return {
                   id: item.id,
                   name: item.name,
-                  property: config.name,
+                  property: effectiveName,
                   propertyId: config.id,
                   group: item.group?.title || 'No Group',
                   createdAt: item.created_at,
@@ -149,6 +155,7 @@ export const useMultiBoardData = (boardConfigs = []) => {
       }
 
       setItems(allItems);
+      setResolvedNames(nameMap);
     } catch (err) {
       console.error('Failed to fetch boards:', err);
       setError('Failed to load ownership data. Please try again.');
@@ -172,5 +179,5 @@ export const useMultiBoardData = (boardConfigs = []) => {
     }
   };
 
-  return { items, loading, isRefreshing, error, loadedCount, totalCount: boardConfigs.length, refetch };
+  return { items, resolvedNames, loading, isRefreshing, error, loadedCount, totalCount: boardConfigs.length, refetch };
 };

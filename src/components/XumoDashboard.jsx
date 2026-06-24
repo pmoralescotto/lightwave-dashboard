@@ -6,7 +6,7 @@ import {
 import { Activity, TrendingUp, UserPlus, CheckCircle2, Download, RefreshCw } from 'lucide-react';
 import KPICard from './KPICard';
 import { useXumoBoardData, getCurrentWeekStart } from '../hooks/useXumoBoardData';
-import { ACTIVATION_BOARD_CONFIGS } from '../utils/boardConfigs';
+import { BOARD_CONFIGS } from '../utils/boardConfigs';
 
 // ── CSV helpers ───────────────────────────────────────────────────────────────
 
@@ -336,7 +336,7 @@ const WeeklyRunLog = ({ properties }) => {
 
 const ActivationSection = () => {
   const { properties, loading, isRefreshing, error, loadedCount, totalCount, refetch } =
-    useXumoBoardData(ACTIVATION_BOARD_CONFIGS);
+    useXumoBoardData(BOARD_CONFIGS);
 
   const thisWeek = getCurrentWeekStart();
 
@@ -375,7 +375,7 @@ const ActivationSection = () => {
             {[1, 2, 3, 4].map((i) => <Skeleton key={i} height="120px" borderRadius="xl" />)}
           </SimpleGrid>
           <SimpleGrid columns={{ base: 1, sm: 2, lg: 4 }} gap="4">
-            {ACTIVATION_BOARD_CONFIGS.map((_, i) => <Skeleton key={i} height="160px" borderRadius="xl" />)}
+            {BOARD_CONFIGS.map((_, i) => <Skeleton key={i} height="160px" borderRadius="xl" />)}
           </SimpleGrid>
           <Skeleton height="420px" borderRadius="xl" />
         </Stack>

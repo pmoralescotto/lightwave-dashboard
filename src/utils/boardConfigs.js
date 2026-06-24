@@ -11,9 +11,15 @@ export const ACTIVATION_BOARD_CONFIGS = [
   { id: '18409193740', name: 'Zephyr Pointe' },
 ];
 
-// Monday.com group names for activation tracking (lowercase, must match exactly)
-export const GROUP_SIGNUP = 'new-sign up';
-export const GROUP_ACTIVE = 'active- enable automation tracker';
+// Monday.com group names for activation tracking (lowercase)
+// SIGNUP: "Incoming Reponses from Property" (Monday.com has a typo — "Reponses" not "Responses")
+export const GROUP_SIGNUP_NAMES = [
+  'incoming reponses from property',
+  'incoming responses from property',
+  'new-sign up',
+  'new sign up',
+];
+export const GROUP_ACTIVE_NAMES = ['active'];
 
 // ── All property boards ───────────────────────────────────────────────────────
 // Boards with an empty name have their property name resolved automatically

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import {
-  GROUP_SIGNUP, GROUP_ACTIVE,
+  GROUP_SIGNUP_NAMES, GROUP_ACTIVE_NAMES,
   findColumnByTitle, getColumnValueById, extractDateValue,
 } from '../utils/boardConfigs';
 
@@ -27,29 +27,32 @@ export const getWeekStart = (date) => {
 
 export const getCurrentWeekStart = () => getWeekStart(new Date());
 
-// Resolve activation date: completion date column first, fall back to updated_at
-const resolveActivationDate = (item, completionColId) => {
-  if (completionColId) {
-    const colVal = getColumnValueById(item.column_values, completionColId);
-    const date   = extractDateValue(colVal, null);
-    if (date) return date instanceof Date ? date.toISOString() : date;
-  }
-  return item.updated_at || null;
-};
+const toIso = (date) => (date instanceof Date ? date.toISOString() : date);
 
-const buildWeeklyLog = (signUpItems, activationItems, completionColId) => {
+const buildWeeklyLog = (signUpItems, activationItems, signUpDateColId, completionColId) => {
   const log = {};
 
   signUpItems.forEach((item) => {
-    const week = item.created_at ? getWeekStart(item.created_at) : null;
+    let dateStr = item.created_at;
+    if (signUpDateColId) {
+      const colVal = getColumnValueById(item.column_values, signUpDateColId);
+      const d = extractDateValue(colVal, null);
+      if (d) dateStr = toIso(d);
+    }
+    const week = dateStr ? getWeekStart(dateStr) : null;
     if (!week) return;
     if (!log[week]) log[week] = { signUps: [], activations: [] };
     log[week].signUps.push(item);
   });
 
   activationItems.forEach((item) => {
-    const dateStr = resolveActivationDate(item, completionColId);
-    const week    = dateStr ? getWeekStart(dateStr) : null;
+    let dateStr = item.updated_at;
+    if (completionColId) {
+      const colVal = getColumnValueById(item.column_values, completionColId);
+      const d = extractDateValue(colVal, null);
+      if (d) dateStr = toIso(d);
+    }
+    const week = dateStr ? getWeekStart(dateStr) : null;
     if (!week) return;
     if (!log[week]) log[week] = { signUps: [], activations: [] };
     log[week].activations.push(item);
@@ -112,12 +115,16 @@ export const useXumoBoardData = (boardConfigs = []) => {
           const boardName    = config.name || board.name || `Board ${config.id}`;
           const boardColumns = board.columns || [];
 
-          // Find the completion date column (the date the item was switched active)
-          const completionCol = findColumnByTitle(boardColumns, [
-            'completion date', 'completiondate', 'completion', 'date completed',
-            'completed date', 'activation date', 'activationdate', 'active date',
+          // Sign-up date column (when the property submitted the sign-up)
+          const signUpDateCol = findColumnByTitle(boardColumns, [
+            'sign-up date', 'signup date', 'signupdate', 'sign up date', 'date',
           ]);
-          const completionColId = completionCol?.id || null;
+
+          // Completion date column (when the unit was switched to Active)
+          const completionCol = findColumnByTitle(boardColumns, [
+            'completion date', 'completiondate', 'date completed',
+            'completed date', 'activation date', 'active date',
+          ]);
 
           let boardItems = board.items_page?.items || [];
           let cursor     = board.items_page?.cursor;
@@ -145,9 +152,15 @@ export const useXumoBoardData = (boardConfigs = []) => {
             }
           }
 
-          const signUpItems     = boardItems.filter((item) => normalizeGroup(item.group?.title) === GROUP_SIGNUP);
-          const activationItems = boardItems.filter((item) => normalizeGroup(item.group?.title) === GROUP_ACTIVE);
-          const weeklyLog       = buildWeeklyLog(signUpItems, activationItems, completionColId);
+          const signUpItems     = boardItems.filter((item) => GROUP_SIGNUP_NAMES.includes(normalizeGroup(item.group?.title)));
+          const activationItems = boardItems.filter((item) => GROUP_ACTIVE_NAMES.includes(normalizeGroup(item.group?.title)));
+
+          const weeklyLog = buildWeeklyLog(
+            signUpItems,
+            activationItems,
+            signUpDateCol?.id || null,
+            completionCol?.id || null,
+          );
 
           results.push({
             boardId:          config.id,

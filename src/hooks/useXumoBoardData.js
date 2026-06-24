@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
-import { GROUP_SIGNUP, GROUP_ACTIVE } from '../utils/boardConfigs';
+import {
+  GROUP_SIGNUP, GROUP_ACTIVE,
+  findColumnByTitle, getColumnValueById, extractDateValue,
+} from '../utils/boardConfigs';
 
 const normalizeGroup = (title) => (title || '').toLowerCase().trim();
 
-// Reuse the same Netlify proxy as the ISP dashboard
 const fetchMondayAPI = async (query, variables = {}) => {
   const response = await fetch('/.netlify/functions/monday-api', {
     method: 'POST',
@@ -14,11 +16,10 @@ const fetchMondayAPI = async (query, variables = {}) => {
   return response.json();
 };
 
-// Returns the ISO date (YYYY-MM-DD) of the Monday of the week containing `date`
 export const getWeekStart = (date) => {
   const d = new Date(date);
-  const day = d.getDay(); // 0=Sun
-  const diff = day === 0 ? -6 : 1 - day; // shift to Monday
+  const day = d.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
   d.setDate(d.getDate() + diff);
   d.setHours(0, 0, 0, 0);
   return d.toISOString().split('T')[0];
@@ -26,8 +27,17 @@ export const getWeekStart = (date) => {
 
 export const getCurrentWeekStart = () => getWeekStart(new Date());
 
-// Build a weekly log map: { 'YYYY-MM-DD': { signUps: [...], activations: [...] } }
-const buildWeeklyLog = (signUpItems, activationItems) => {
+// Resolve activation date: completion date column first, fall back to updated_at
+const resolveActivationDate = (item, completionColId) => {
+  if (completionColId) {
+    const colVal = getColumnValueById(item.column_values, completionColId);
+    const date   = extractDateValue(colVal, null);
+    if (date) return date instanceof Date ? date.toISOString() : date;
+  }
+  return item.updated_at || null;
+};
+
+const buildWeeklyLog = (signUpItems, activationItems, completionColId) => {
   const log = {};
 
   signUpItems.forEach((item) => {
@@ -38,8 +48,8 @@ const buildWeeklyLog = (signUpItems, activationItems) => {
   });
 
   activationItems.forEach((item) => {
-    // updated_at is the best proxy for when an item moved to the active group
-    const week = item.updated_at ? getWeekStart(item.updated_at) : null;
+    const dateStr = resolveActivationDate(item, completionColId);
+    const week    = dateStr ? getWeekStart(dateStr) : null;
     if (!week) return;
     if (!log[week]) log[week] = { signUps: [], activations: [] };
     log[week].activations.push(item);
@@ -49,12 +59,12 @@ const buildWeeklyLog = (signUpItems, activationItems) => {
 };
 
 export const useXumoBoardData = (boardConfigs = []) => {
-  const [properties, setProperties]   = useState([]);
-  const [loading, setLoading]         = useState(true);
+  const [properties, setProperties]     = useState([]);
+  const [loading, setLoading]           = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [error, setError]             = useState(null);
-  const [loadedCount, setLoadedCount] = useState(0);
-  const hasInitialized = useRef(false);
+  const [error, setError]               = useState(null);
+  const [loadedCount, setLoadedCount]   = useState(0);
+  const hasInitialized  = useRef(false);
   const fetchInProgress = useRef(false);
 
   const fetchAllBoards = async (isRefetch = false) => {
@@ -66,10 +76,7 @@ export const useXumoBoardData = (boardConfigs = []) => {
       setError(null);
       setLoadedCount(0);
 
-      if (!boardConfigs?.length) {
-        setProperties([]);
-        return;
-      }
+      if (!boardConfigs?.length) { setProperties([]); return; }
 
       const results = [];
 
@@ -80,11 +87,13 @@ export const useXumoBoardData = (boardConfigs = []) => {
             query ($boardId: ID!) {
               boards(ids: [$boardId]) {
                 id name
+                columns { id title type }
                 items_page(limit: 500) {
                   cursor
                   items {
                     id name created_at updated_at
                     group { id title }
+                    column_values { id text value type }
                   }
                 }
               }
@@ -99,13 +108,20 @@ export const useXumoBoardData = (boardConfigs = []) => {
             continue;
           }
 
-          const board     = boards[0];
-          const boardName = config.name || board.name || `Board ${config.id}`;
+          const board        = boards[0];
+          const boardName    = config.name || board.name || `Board ${config.id}`;
+          const boardColumns = board.columns || [];
+
+          // Find the completion date column (the date the item was switched active)
+          const completionCol = findColumnByTitle(boardColumns, [
+            'completion date', 'completiondate', 'completion', 'date completed',
+            'completed date', 'activation date', 'activationdate', 'active date',
+          ]);
+          const completionColId = completionCol?.id || null;
 
           let boardItems = board.items_page?.items || [];
           let cursor     = board.items_page?.cursor;
 
-          // Paginate through all items
           while (cursor) {
             const nextQuery = `
               query ($cursor: String!) {
@@ -114,6 +130,7 @@ export const useXumoBoardData = (boardConfigs = []) => {
                   items {
                     id name created_at updated_at
                     group { id title }
+                    column_values { id text value type }
                   }
                 }
               }
@@ -130,7 +147,7 @@ export const useXumoBoardData = (boardConfigs = []) => {
 
           const signUpItems     = boardItems.filter((item) => normalizeGroup(item.group?.title) === GROUP_SIGNUP);
           const activationItems = boardItems.filter((item) => normalizeGroup(item.group?.title) === GROUP_ACTIVE);
-          const weeklyLog       = buildWeeklyLog(signUpItems, activationItems);
+          const weeklyLog       = buildWeeklyLog(signUpItems, activationItems, completionColId);
 
           results.push({
             boardId:          config.id,
@@ -149,7 +166,6 @@ export const useXumoBoardData = (boardConfigs = []) => {
         }
 
         setLoadedCount(i + 1);
-        // Small delay between requests to respect Monday.com rate limits
         if (i < boardConfigs.length - 1) {
           await new Promise((r) => setTimeout(r, 300));
         }
@@ -179,15 +195,7 @@ export const useXumoBoardData = (boardConfigs = []) => {
     }
   };
 
-  return {
-    properties,
-    loading,
-    isRefreshing,
-    error,
-    loadedCount,
-    totalCount: boardConfigs.length,
-    refetch,
-  };
+  return { properties, loading, isRefreshing, error, loadedCount, totalCount: boardConfigs.length, refetch };
 };
 
 const emptyProperty = (config) => ({

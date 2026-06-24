@@ -152,8 +152,17 @@ export const useXumoBoardData = (boardConfigs = []) => {
             }
           }
 
-          const signUpItems     = boardItems.filter((item) => GROUP_SIGNUP_NAMES.includes(normalizeGroup(item.group?.title)));
-          const activationItems = boardItems.filter((item) => GROUP_ACTIVE_NAMES.includes(normalizeGroup(item.group?.title)));
+          const signUpItems = boardItems.filter((item) => GROUP_SIGNUP_NAMES.includes(normalizeGroup(item.group?.title)));
+
+          // Items in the Active group only count as activations if they have
+          // a Completion Date filled in — pre-loaded placeholder rows have no date
+          const activeGroupItems = boardItems.filter((item) => GROUP_ACTIVE_NAMES.includes(normalizeGroup(item.group?.title)));
+          const activationItems = completionCol
+            ? activeGroupItems.filter((item) => {
+                const colVal = getColumnValueById(item.column_values, completionCol.id);
+                return extractDateValue(colVal, null) !== null;
+              })
+            : activeGroupItems;
 
           const weeklyLog = buildWeeklyLog(
             signUpItems,

@@ -1,3 +1,20 @@
+// ── Activation tracking boards (sign-up → active workflow) ───────────────────
+export const ACTIVATION_BOARD_CONFIGS = [
+  { id: '18416374771', name: 'Brookside Crossing (Citrus Grove)' },
+  { id: '18414517915', name: 'Cresta Ranch' },
+  { id: '18414517422', name: 'Mesquite Trails' },
+  { id: '18415799052', name: 'Marshall Pointe' },
+  { id: '18409472935', name: 'Pearsall Park' },
+  { id: '18413059714', name: 'Sageland' },
+  { id: '18407053360', name: 'Santa Clara I' },
+  { id: '18407053038', name: 'Santa Clara II' },
+  { id: '18409193740', name: 'Zephyr Pointe' },
+];
+
+// Monday.com group names for activation tracking (lowercase, must match exactly)
+export const GROUP_SIGNUP = 'new-sign up';
+export const GROUP_ACTIVE = 'active- enable automation tracker';
+
 // ── All property boards ───────────────────────────────────────────────────────
 // Boards with an empty name have their property name resolved automatically
 // from the Monday.com board title at runtime.

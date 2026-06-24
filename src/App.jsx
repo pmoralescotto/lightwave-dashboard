@@ -19,6 +19,7 @@ import { useAdminAuth } from './hooks/useAdminAuth';
 import { BUCKET_COLORS } from './utils/boardConfigs';
 import Logo from './components/Logo';
 import AdminPanel from './components/AdminPanel';
+import ActivationSection from './components/XumoDashboard';
 
 // Dashboard is publicly accessible — no login required for viewers.
 // All Monday.com API calls are proxied through a secure Netlify function.
@@ -331,6 +332,11 @@ const Dashboard = () => {
           </Box>
         </Stack>
       </Container>
+
+      {/* Activation Tracking */}
+      <Box borderTop="2px solid" borderColor="gray.200" bg="gray.50">
+        <ActivationSection />
+      </Box>
 
       {/* Password Modal */}
       <Dialog.Root open={passwordOpen} onOpenChange={(e) => (e.open ? onPasswordOpen() : handlePasswordClose())}>

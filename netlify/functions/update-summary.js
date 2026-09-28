@@ -192,5 +192,12 @@ const handler = async () => {
   return { statusCode: 200 };
 };
 
-// Run every Monday at 9 AM EST (14:00 UTC)
-exports.handler = require('@netlify/functions').schedule('0 14 * * 1', handler);
+// Schedule is defined in netlify.toml — this handler runs both on schedule
+// and when called via HTTP POST for manual/on-demand runs.
+exports.handler = async (event) => {
+  // Block everything except POST and scheduled invocations
+  if (event.httpMethod && event.httpMethod !== 'POST') {
+    return { statusCode: 405, body: 'Method not allowed' };
+  }
+  return handler(event);
+};

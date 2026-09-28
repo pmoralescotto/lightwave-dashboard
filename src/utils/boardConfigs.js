@@ -47,6 +47,7 @@ export const BOARD_CONFIGS = [
   { id: '18401423601', name: 'The Victoria at Huxley' },
   { id: '18401423458', name: 'The View at Huxley' },
   { id: '18403282432', name: 'Tuscany Lakes Internet' },
+  { id: '18420317504', name: 'Herrington Mills' },
   { id: '18416374771', name: 'Brookside Crossing (Citrus Grove)' },
   { id: '18414517915', name: 'Cresta Ranch' },
   { id: '18414517422', name: 'Mesquite Trails' },

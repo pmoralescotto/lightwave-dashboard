@@ -164,6 +164,8 @@ async function updateSummaryItem(token, summaryItemId, activeCount, pendingCount
   });
 }
 
+const BATCH_SIZE = 8;
+
 const handler = async () => {
   const token = process.env.MONDAY_API_TOKEN;
   if (!token) {
@@ -174,22 +176,35 @@ const handler = async () => {
   const today = new Date().toISOString().split('T')[0];
   const results = [];
 
-  for (const prop of PROPERTY_MAP) {
-    try {
-      console.log(`Fetching ${prop.name}...`);
-      const { activeCount, pendingCount } = await fetchBoardCounts(token, prop.boardId);
-      await updateSummaryItem(token, prop.summaryItemId, activeCount, pendingCount, today);
-      results.push({ name: prop.name, activeCount, pendingCount, status: 'ok' });
-      console.log(`  ${prop.name}: ${activeCount} active, ${pendingCount} pending`);
-    } catch (err) {
-      console.error(`  ${prop.name} failed:`, err.message);
-      results.push({ name: prop.name, status: 'error', error: err.message });
+  for (let i = 0; i < PROPERTY_MAP.length; i += BATCH_SIZE) {
+    const batch = PROPERTY_MAP.slice(i, i + BATCH_SIZE);
+
+    const batchResults = await Promise.all(
+      batch.map(async (prop) => {
+        try {
+          const { activeCount, pendingCount } = await fetchBoardCounts(token, prop.boardId);
+          await updateSummaryItem(token, prop.summaryItemId, activeCount, pendingCount, today);
+          console.log(`${prop.name}: ${activeCount} active, ${pendingCount} pending`);
+          return { name: prop.name, activeCount, pendingCount, status: 'ok' };
+        } catch (err) {
+          console.error(`${prop.name} failed:`, err.message);
+          return { name: prop.name, status: 'error', error: err.message };
+        }
+      })
+    );
+
+    results.push(...batchResults);
+
+    if (i + BATCH_SIZE < PROPERTY_MAP.length) {
+      await delay(800);
     }
-    await delay(400); // respect Monday.com rate limits
   }
 
   console.log('Summary update complete:', JSON.stringify(results, null, 2));
-  return { statusCode: 200 };
+  return {
+    statusCode: 200,
+    body: JSON.stringify({ updated: results.length, results }),
+  };
 };
 
 // Schedule is defined in netlify.toml — this handler runs both on schedule

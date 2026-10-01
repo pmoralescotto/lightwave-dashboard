@@ -10,9 +10,8 @@
   node_bundler = "esbuild"
 
 [[functions]]
-  name = "update-summary"
+  name = "update-summary-background"
   schedule = "0 14 * * 1"
-  timeout_seconds = 26
 
 [[redirects]]
   from = "/*"

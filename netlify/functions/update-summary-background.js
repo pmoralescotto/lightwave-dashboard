@@ -1,7 +1,7 @@
 /**
- * Netlify scheduled function — runs every Monday at 9 AM EST
- * Reads active count + pending sign-ups from all 32 property boards
- * and writes the totals into the ISP Weekly Active Summary board.
+ * Netlify background function — runs every Monday at 9 AM EST
+ * The -background suffix tells Netlify to return 202 immediately
+ * and keep the function running up to 15 minutes.
  *
  * Summary board ID : 18433081282
  * Columns          : numeric_mm7m9vzx (Active Count)
@@ -9,11 +9,11 @@
  *                    date_mm7m2x8a    (Last Updated)
  */
 
-const MONDAY_API     = 'https://api.monday.com/v2';
-const SUMMARY_BOARD  = '18433081282';
-const COL_ACTIVE     = 'numeric_mm7m9vzx';
-const COL_PENDING    = 'numeric_mm7m70qj';
-const COL_UPDATED    = 'date_mm7m2x8a';
+const MONDAY_API    = 'https://api.monday.com/v2';
+const SUMMARY_BOARD = '18433081282';
+const COL_ACTIVE    = 'numeric_mm7m9vzx';
+const COL_PENDING   = 'numeric_mm7m70qj';
+const COL_UPDATED   = 'date_mm7m2x8a';
 
 const GROUP_SIGNUP = [
   'incoming reponses from property',
@@ -23,7 +23,6 @@ const GROUP_SIGNUP = [
 ];
 const GROUP_ACTIVE = ['active'];
 
-// board ID → summary item ID (created 2026-09-28)
 const PROPERTY_MAP = [
   { boardId: '18381708169', summaryItemId: '13154487538', name: '52 at Park' },
   { boardId: '18407051928', summaryItemId: '13154479027', name: 'Allapattah Gardens' },
@@ -166,53 +165,36 @@ async function updateSummaryItem(token, summaryItemId, activeCount, pendingCount
 
 const BATCH_SIZE = 8;
 
-const handler = async () => {
+// Background functions: Netlify sends 202 immediately, this runs up to 15 min
+exports.handler = async () => {
   const token = process.env.MONDAY_API_TOKEN;
   if (!token) {
     console.error('MONDAY_API_TOKEN not set');
-    return { statusCode: 500 };
+    return;
   }
 
   const today = new Date().toISOString().split('T')[0];
-  const results = [];
+  console.log(`Starting summary update for ${today}`);
 
   for (let i = 0; i < PROPERTY_MAP.length; i += BATCH_SIZE) {
     const batch = PROPERTY_MAP.slice(i, i + BATCH_SIZE);
 
-    const batchResults = await Promise.all(
+    await Promise.all(
       batch.map(async (prop) => {
         try {
           const { activeCount, pendingCount } = await fetchBoardCounts(token, prop.boardId);
           await updateSummaryItem(token, prop.summaryItemId, activeCount, pendingCount, today);
           console.log(`${prop.name}: ${activeCount} active, ${pendingCount} pending`);
-          return { name: prop.name, activeCount, pendingCount, status: 'ok' };
         } catch (err) {
           console.error(`${prop.name} failed:`, err.message);
-          return { name: prop.name, status: 'error', error: err.message };
         }
       })
     );
-
-    results.push(...batchResults);
 
     if (i + BATCH_SIZE < PROPERTY_MAP.length) {
       await delay(800);
     }
   }
 
-  console.log('Summary update complete:', JSON.stringify(results, null, 2));
-  return {
-    statusCode: 200,
-    body: JSON.stringify({ updated: results.length, results }),
-  };
-};
-
-// Schedule is defined in netlify.toml — this handler runs both on schedule
-// and when called via HTTP POST for manual/on-demand runs.
-exports.handler = async (event) => {
-  // Block everything except POST and scheduled invocations
-  if (event.httpMethod && event.httpMethod !== 'POST') {
-    return { statusCode: 405, body: 'Method not allowed' };
-  }
-  return handler(event);
+  console.log('Summary update complete');
 };
